@@ -17,7 +17,7 @@
 
 #include <cstdio>
 #include "miosix.h"
-#include "miosix/kernel/buffer_queue.h"
+#include "miosix/kernel/queue.h"
 #include "miosix/kernel/scheduler/scheduler.h"
 #include "util/software_i2c.h"
 #include "Microphone.h"
