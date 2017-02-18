@@ -36,9 +36,8 @@
 
 
 #include "miosix.h"
-#include <tr1/functional>
+#include <functional>
 
-using namespace std::tr1;
 
 
 
@@ -67,7 +66,7 @@ public:
      * \param bufsize the number of PCM samples to be processed by the callback 
      * 
      */
-    void init(function<void (unsigned short*, unsigned int)> cback, unsigned int bufsize);
+    void init(std::function<void (unsigned short*, unsigned int)> cback, unsigned int bufsize);
     
     /*
      * Starts the recording. When start() is called the devices configuration
@@ -87,7 +86,7 @@ private:
     Microphone(); // Microphone is a singleton, the constructor is private
     Microphone(const Microphone& orig);
     virtual ~Microphone();
-    function<void (unsigned short*, unsigned int)> callback;
+    std::function<void (unsigned short*, unsigned int)> callback;
     // the buffers handling the double buffering "callback-side"
     unsigned short* readyBuffer;
     unsigned short* processingBuffer;

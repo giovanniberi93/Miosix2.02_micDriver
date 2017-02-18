@@ -3,10 +3,9 @@
 #include "Microphone.h"
 #include "player.h"
 #include <math.h>
-#include <tr1/functional>
+#include <functional>
 
 using namespace std;
-using namespace std::tr1;
 using namespace miosix;
 
 /* 
