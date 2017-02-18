@@ -58,7 +58,7 @@ static void IRQdmaRefill()
 {
     const unsigned short *buffer;
 	unsigned int size;
-	if(bq->IRQgetReadableBuffer(buffer,size)==false)
+	if(bq->tryGetReadableBuffer(buffer,size)==false)
 	{
 		enobuf=true;
 		return;
@@ -105,7 +105,7 @@ void __attribute__((used)) I2SdmaHandrerImpl()
                 DMA_HIFCR_CTEIF5  |
                 DMA_HIFCR_CDMEIF5 |
                 DMA_HIFCR_CFEIF5;
-	bq->IRQbufferEmptied();
+	bq->bufferEmptied();
 	IRQdmaRefill();
 	waiting->IRQwakeup();
 	if(waiting->IRQgetPriority()>Thread::IRQgetCurrentThread()->IRQgetPriority())
@@ -166,7 +166,7 @@ static unsigned short *getWritableBuffer()
 {
 	FastInterruptDisableLock dLock;
 	unsigned short *result;
-	while(bq->IRQgetWritableBuffer(result)==false)
+	while(bq->tryGetWritableBuffer(result)==false)
 	{
 		waiting->IRQwait();
 		{
@@ -183,7 +183,7 @@ static unsigned short *getWritableBuffer()
 static void bufferFilled()
 {
 	FastInterruptDisableLock dLock;
-	bq->IRQbufferFilled(bq->bufferMaxSize);
+	bq->bufferFilled(bq->bufferMaxSize());
 }
 
 //
