@@ -1,0 +1,14 @@
+
+Welcome to the Miosix kernel
+============================
+
+You can find information on how to configure and use the kernel
+at the following url: http://miosix.org
+
+============================
+
+The microphone and speaker drivers are released together with a compatible version of Miosix (release 2.02), already configured for the execution of the demo (main.cpp) on STM32F407 discovery board.
+
+Configuration includes:
+ - selection of the STM32F407 discovery board
+ - disabled DMA for the serial port in miosix/config/arch/cortexM4_stm32f4/stm32f407vg_stm32f4discovery, in order to avoid conflict with I2S in the execution of the demo
