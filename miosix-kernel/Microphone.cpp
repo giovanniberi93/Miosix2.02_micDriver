@@ -214,9 +214,14 @@ void* Microphone::mainLoopLauncher(void* arg){
 void Microphone::mainLoop(){
     waiting = Thread::getCurrentThread();
     pthread_t cback;
-    bool first=true;
     bq=new BufferQueue<unsigned short,bufferSize,bufNum>();
     NVIC_EnableIRQ(DMA1_Stream3_IRQn);  
+    // create the thread that will execute the callbacks 
+    pthread_create(&cback,NULL,callbackLauncher,reinterpret_cast<void*>(this));
+    // initialize
+    isBufferReady = false;
+    unsigned short* tmp;
+
     while(recording){
         PCMindex = 0;      
         // process any new chunk of PDM samples
@@ -230,28 +235,22 @@ void Microphone::mainLoop(){
                 break;
             }
             bufferEmptied();  
-
         }
         
         // swaps the ready and the processing buffer: allows double buffering
         //on the callback side
-        unsigned short* tmp;
         tmp = readyBuffer;
+        // start critical section
+        pthread_mutex_lock(&bufMutex);
         readyBuffer = processingBuffer;
+        isBufferReady = true;
+        pthread_cond_broadcast(&cbackExecCond);
+        pthread_mutex_unlock(&bufMutex);
+        // end critical section
         processingBuffer = tmp;
-        
-        if (!first){
-            // if the previous callback is still running, wait for it to end.
-            // this implies that some samples may be lost
-            pthread_join(cback,NULL);
-        } else {
-            first = false;
-        }
-        
-        pthread_create(&cback,NULL,callbackLauncher,reinterpret_cast<void*>(this));
-        
     }
-    
+    pthread_cond_broadcast(&cbackExecCond);
+    pthread_join(cback, NULL);
 }
 
 void* Microphone::callbackLauncher(void* arg){
@@ -259,7 +258,14 @@ void* Microphone::callbackLauncher(void* arg){
 }
 
 void Microphone::execCallback() {
-    callback(readyBuffer,PCMsize);
+    while(recording){
+        pthread_mutex_lock(&bufMutex);
+        while(recording && !isBufferReady)
+            pthread_cond_wait(&cbackExecCond, &bufMutex);
+        callback(readyBuffer,PCMsize);
+        isBufferReady = false;
+        pthread_mutex_unlock(&bufMutex);
+    }
 }
 
 bool Microphone::processPDM(const unsigned short *pdmbuffer, int size) {
